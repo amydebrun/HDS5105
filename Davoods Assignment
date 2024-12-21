@@ -14,3 +14,125 @@ library(shiny)
 DIG<- read.csv("DIG.csv")
 
 ```
+```{r}
+library(shinydashboard)
+ui <- dashboardPage(
+    dashboardHeader(title = "Palmer Penguins Explorer",titleWidth = 450,
+                  tags$li(a(href = 'https://allisonhorst.github.io/palmerpenguins/',
+                            img(src = 'penguins.png',
+                                title = "Penguins Homepage", height = "30px", width = "50px"),
+                            style = "padding-top:10px; padding-bottom:10px;"),
+                          class = "dropdown")),
+    
+    dashboardSidebar(
+      selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+      radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male")),
+      sliderInput("bmass", "Select Body Mass Range:", min = 2500, max = 7000, value = c(4000, 5000)),
+      sliderInput("year", "Select year of the study:", min = 2007, max = 2009, value = 2007, step = 1, animate = TRUE)
+    ),
+    dashboardBody(
+      fluidRow(
+        box(width=4, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+            plotOutput("plot1")),
+        box(width=8, title = "Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+            dataTableOutput("table1"))
+      )
+    )
+)
+
+server <- function(input, output) {
+  penguins_sub <- reactive({
+    penguins %>%
+      filter(species == input$species) %>%
+      filter(sex == input$sex) %>%
+      filter(body_mass_g >= input$bmass[1] & body_mass_g <= input$bmass[2]) %>%
+      filter(year == input$year)
+  })
+  
+  output$plot1 <- renderPlot({ 
+      ggplot(data = penguins_sub(), aes(x = bill_depth_mm, y = bill_length_mm)) +
+      geom_point()
+    })
+  
+  output$table1 <- renderDataTable({ 
+    penguins_sub()
+    })
+  
+}
+
+shinyApp(ui = ui, server = server)
+```
+```{r}
+library(shinydashboard)
+ui <- dashboardPage(
+    dashboardHeader(title = "Digitalis Investigation Group Trial",titleWidth = 450,
+                  tags$li(a(href = 'https://biolincc.nhlbi.nih.gov/studies/dig/',
+                            img(src = 'penguins.png',
+                                title = "Penguins Homepage", height = "30px", width = "50px"),
+                            style = "padding-top:10px; padding-bottom:10px;"),
+                          class = "dropdown")),
+    
+    dashboardSidebar(
+      selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+      radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male")),
+      sliderInput("bmass", "Select Body Mass Range:", min = 2500, max = 7000, value = c(4000, 5000)),
+      sliderInput("year", "Select year of the study:", min = 2007, max = 2009, value = 2007, step = 1, animate = TRUE)
+    ),
+    dashboardBody(
+    tabBox(width = 12, id = "tabs",
+      tabPanel("Scatter Plot", 
+               fluidRow(box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+            plotOutput("plot1")))
+      ),
+      tabPanel("Data", 
+               fluidRow(
+                box(width=12, title = "Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+            dataTableOutput("table1")) 
+               )
+               
+      )
+    )
+  )
+)
+
+server <- function(input, output) {
+  penguins_sub <- reactive({
+    penguins %>%
+      filter(species == input$species) %>%
+      filter(sex == input$sex) %>%
+      filter(body_mass_g >= input$bmass[1] & body_mass_g <= input$bmass[2]) %>%
+      filter(year == input$year)
+  })
+  
+  output$plot1 <- renderPlot({ 
+      ggplot(data = penguins_sub(), aes(x = bill_depth_mm, y = bill_length_mm)) +
+      geom_point()
+    })
+  
+  output$table1 <- renderDataTable({ 
+    penguins_sub()
+    })
+  
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+
+```{r, eval=FALSE}
+dashboardBody(
+    tabBox(width = 12, id = "tabs",
+      tabPanel("Scatter Plot", 
+               fluidRow(box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+            plotOutput("plot1")))
+      ),
+      tabPanel("Data", 
+               fluidRow(
+                box(width=12, title = "Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+            dataTableOutput("table1")) 
+               )
+               
+      )
+    )
+  )
+```
