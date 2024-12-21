@@ -32,7 +32,7 @@ shinyApp(ui, server)
 library(shiny)
 
 ui <- fluidPage(
-  titlePanel("Palmer Penguins Explorer")
+  titlePanel("Digitalis Investigation Group")
 )
 
 server <- function(input, output) {
@@ -46,7 +46,7 @@ shinyApp(ui, server)
 library(shiny)
 
 ui <- fluidPage(
-  titlePanel("Palmer Penguins Explorer"),
+  titlePanel("Digitalis Investigation Group"),
   sidebarLayout(
     sidebarPanel(
     # Controls and content for sidebar go here
@@ -69,12 +69,12 @@ shinyApp(ui, server)
 library(shiny)
 
 ui <- fluidPage(
-  titlePanel("Palmer Penguins Explorer"),
+  titlePanel("Digitalis Investigation Group"),
   sidebarLayout(
     sidebarPanel(
-        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
         
-        selectInput(inputId = "sex", label = "Select Penguin sex:", choices = c("m", "f"), multiple = FALSE)
+        selectInput(inputId = "sex", label = "Select Sex:", choices = c("m", "f"), multiple = FALSE)
         
     ),
     mainPanel(
@@ -95,11 +95,11 @@ shinyApp(ui, server)
 library(shiny)
 
 ui <- fluidPage(
-  titlePanel("Palmer Penguins Explorer"),
+  titlePanel("Digitalis Investigation Group"),
   sidebarLayout(
     sidebarPanel(
-        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male"), inline = T)
+        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
+        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male"), inline = T)
     ),
     mainPanel(
     # Controls and content for main panel go here
@@ -119,12 +119,12 @@ shinyApp(ui, server)
 library(shiny)
 
 ui <- fluidPage(
-  titlePanel("Palmer Penguins Explorer"),
+  titlePanel("Digitalis Investigation Group"),
   sidebarLayout(
     sidebarPanel(
-        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
         radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male")),
-        sliderInput("bmass", "Select Body Mass Range:", min = 2500, max = 7000, value = c(4000, 5000))
+        sliderInput("diabp", "Select Dystolic BP range:", min = 0, max = 200, value = c(4000, 5000))
 
     ),
     mainPanel(
