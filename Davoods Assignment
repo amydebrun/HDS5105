@@ -149,10 +149,10 @@ ui <- fluidPage(
   titlePanel("Digitalis Investigation Group"),
   sidebarLayout(
     sidebarPanel(
-        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
+       selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
         radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 0, max = 200, value = c(4000, 5000))
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 2007, step = 1, animate = TRUE)
+        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
+        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
 
     ),
     mainPanel(
@@ -177,10 +177,10 @@ ui <- fluidPage(
   titlePanel("Digitalis Investigation Group"),
   sidebarLayout(
     sidebarPanel(
-         selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
+       selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
         radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 0, max = 200, value = c(4000, 5000))
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 2007, step = 1, animate = TRUE)
+        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
+        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
 
     ),
     mainPanel(
@@ -208,10 +208,10 @@ ui <- fluidPage(
   titlePanel("Digitalis Investigation Group"),
   sidebarLayout(
     sidebarPanel(
-         selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
+      selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
         radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 0, max = 200, value = c(4000, 5000))
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 2007, step = 1, animate = TRUE)
+        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
+        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
 
     ),
     mainPanel(
@@ -243,10 +243,10 @@ ui <- dashboardPage(
                           class = "dropdown")),
     
     dashboardSidebar(
-          selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
+        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
         radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 0, max = 200, value = c(4000, 5000))
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 2007, step = 1, animate = TRUE)
+        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
+        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
     ),
     dashboardBody(
       fluidRow(
@@ -297,8 +297,8 @@ ui <- dashboardPage(
     dashboardSidebar(
        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
         radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 0, max = 200, value = c(4000, 5000))
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 2007, step = 1, animate = TRUE)
+        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
+        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
     ),
     dashboardBody(
     tabBox(width = 12, id = "tabs",
