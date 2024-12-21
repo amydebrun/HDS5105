@@ -13,6 +13,225 @@ library(shiny)
 DIG<- read.csv("DIG.csv")
 
 ```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer")
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+    # Controls and content for sidebar go here
+    ),
+    mainPanel(
+    # Controls and content for main panel go here
+    )
+  )
+  
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        
+        selectInput(inputId = "sex", label = "Select Penguin sex:", choices = c("m", "f"), multiple = FALSE)
+        
+    ),
+    mainPanel(
+    # Controls and content for main panel go here
+    )
+  )
+  
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male"), inline = T)
+    ),
+    mainPanel(
+    # Controls and content for main panel go here
+    )
+  )
+  
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male")),
+        sliderInput("bmass", "Select Body Mass Range:", min = 2500, max = 7000, value = c(4000, 5000))
+
+    ),
+    mainPanel(
+    # Controls and content for main panel go here
+    )
+  )
+  
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male")),
+        sliderInput("bmass", "Select Body Mass Range:", min = 2500, max = 7000, value = c(4000, 5000)),
+        sliderInput("year", "Select year of the study:", min = 2007, max = 2009, value = 2007, step = 1, animate = TRUE)
+
+    ),
+    mainPanel(
+    # Controls and content for main panel go here
+    )
+  )
+  
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male")),
+        sliderInput("bmass", "Select Body Mass Range:", min = 2500, max = 7000, value = c(4000, 5000)),
+        sliderInput("year", "Select year of the study:", min = 2007, max = 2009, value = 2007, step = 1, animate = TRUE)
+
+    ),
+    mainPanel(
+    plotOutput("plot1")
+    )
+  )
+  
+)
+
+server <- function(input, output) {
+  
+}
+
+shinyApp(ui, server)
+
+```
+
+```{r}
+library(shiny)
+library(tidyverse)
+library(palmerpenguins)
+
+
+ui <- fluidPage(
+  titlePanel("Palmer Penguins Explorer"),
+  sidebarLayout(
+    sidebarPanel(
+        selectInput(inputId = "species", label = "Select Penguin Species:", choices = c("Adelie", "Gentoo", "Chinstrap"), multiple = FALSE),
+        radioButtons(inputId = "sex", label = "Select Penguin Sex:", choices = c("female", "male")),
+        sliderInput("bmass", "Select Body Mass Range:", min = 2500, max = 7000, value = c(4000, 5000)),
+        sliderInput("year", "Select year of the study:", min = 2007, max = 2009, value = 2007, step = 1, animate = TRUE)
+
+    ),
+    mainPanel(
+    plotOutput("plot1")
+    )
+  )
+  
+)
+
+server <- function(input, output) {
+  output$plot1 <- renderPlot({ 
+      ggplot(penguins, aes(x = bill_depth_mm, y = bill_length_mm)) +
+      geom_point()
+    })
+}
+
+shinyApp(ui, server)
+
+```
+
 ```{r}
 library(shinydashboard)
 ui <- dashboardPage(
