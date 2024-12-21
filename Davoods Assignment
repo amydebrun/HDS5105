@@ -3,7 +3,6 @@
 ```{r, warning=FALSE, message=FALSE}
 if (!require("shiny")) install.packages("shiny")
 if (!require("tidyverse")) install.packages("tidyverse")
-if (!require("palmerpenguins")) install.packages("palmerpenguins")
 if (!require("DynNom")) install.packages("DynNom")
 if (!require("shinydashboard")) install.packages("shinydashboard")
 
@@ -41,21 +40,25 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output) {
-  penguins_sub <- reactive({
-    penguins %>%
-      filter(species == input$species) %>%
+ DIG_sub <- reactive({
+    DIG %>%
+      filter(treatment == input$species) %>%
       filter(sex == input$sex) %>%
-      filter(body_mass_g >= input$bmass[1] & body_mass_g <= input$bmass[2]) %>%
-      filter(year == input$year)
+      filter(hyperten == input$hyperten) %>%
+      filter(cvd == input$cvd)%>%
+      filter(whf == input$whf) %>%
+      filter(dig == input$dig) %>%
+      filter(hosp == input$hosp) %>%
+      filter(death == input$death)
   })
   
   output$plot1 <- renderPlot({ 
-      ggplot(data = penguins_sub(), aes(x = bill_depth_mm, y = bill_length_mm)) +
-      geom_point()
+      ggplot(data = DIG_sub(), aes(x = trtmt, y = dig) +
+      geom_boxplot()
     })
   
   output$table1 <- renderDataTable({ 
-    penguins_sub()
+    DIG_sub()
     })
   
 }
