@@ -1,6 +1,4 @@
-
-
-```{r, warning=FALSE, message=FALSE}
+```{r}
 if (!require("shiny")) install.packages("shiny")
 if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("DynNom")) install.packages("DynNom")
@@ -11,10 +9,17 @@ library(tidyverse)
 library(shiny)
 
 DIG<- read.csv("DIG.csv")
+DIG<-subset(DIG,select=c('ID', 'TRTMT', 'AGE', 'SEX', 'BMI', 'KLEVEL', 'CREAT', 'DIABP', 'SYSBP', 'HYPERTEN', 'CVD', 'WHF', 'DIG', 'HOSP', 'HOSPDAYS', 'DEATH', 'DEATHDAY'),col_types="ccnfnnnnnnnnnnnnn")
 
-```
+DIG$TRTMT <- factor(DIG$TRTMT, levels = c(0, 1), labels = c("Placebo", "Treatment"))
+DIG$SEX <- factor(DIG$SEX, levels = c(1, 2), labels = c("Male", "Female"))
+DIG$HYPERTEN <- factor(DIG$HYPERTEN, levels = c(0, 1), labels = c("No", "Yes"))
+DIG$CVD <- factor(DIG$CVD, levels = c(0, 1), labels = c("No", "Yes"))
+DIG$WHF <- factor(DIG$WHF, levels = c(0, 1), labels = c("No", "Yes"))
+DIG$DIG <- factor(DIG$DIG, levels = c(0, 1), labels = c("No", "Yes"))
+DIG$HOSP <- factor(DIG$HOSP, levels = c(0, 1), labels = c("No", "Yes"))
+DIG$DEATH <- factor(DIG$DEATH, levels = c(0, 1), labels = c("Alive", "Death"))
 
-```{r}
 ui <- dashboardPage(
   dashboardHeader(title = "Digitalis Investigation Group Trial", titleWidth = 450,
                   tags$li(a(href = 'https://biolincc.nhlbi.nih.gov/studies/dig/',
@@ -24,87 +29,129 @@ ui <- dashboardPage(
   
   dashboardSidebar(
     selectInput(inputId = "Treatment", label = "Select Treatment:", choices = c("Placebo", "Treatment"), multiple = FALSE),
-    sliderInput(inputId = "BMI", label = "Choose BMI Range:", min = 14.4, max = 62.7, value=14.4, step = 1, animate = TRUE),
+    sliderInput(inputId = "BMI", label = "Choose BMI:", min = 14.4, max = 62.7, value=14.4, step = 1, animate = TRUE),
     radioButtons(inputId = "Sex", label = "Select Sex:", choices = c("Female", "Male")),
     radioButtons(inputId = "CVD", label = "Cardiovascular disease?:", choices = c("Yes", "No")),
-    sliderInput("Age", "Select Age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
+    radioButtons(inputId = "WHF", label = "Worsening Heart Failure?:", choices = c("Yes", "No")),
+    sliderInput("Age", label= "Select Age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE),
+    sliderInput("HOSPDAYS", label="Number of Days in Hospital", min=1, max=1770, value=1, step=1, animate=TRUE)
   ),
   
   dashboardBody(
     tabBox(width = 12, id = "tabs",
       tabPanel("Clinical Data", 
         fluidRow(
-          box(width=12, title = "Clinical Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+          box(width = 12, title = "Clinical Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
               dataTableOutput("table1")) 
         )
       ),
       tabPanel("Hospitalisations", 
         fluidRow(
-          box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot1"))
-        )
-      ),
-      tabPanel("Death", 
-        fluidRow(
-          box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot2"))
-        )
-      ),
-      tabPanel("Cardiovascular Disease", 
-        fluidRow(
-          box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+          box(width = 12, title = "Cardiovascular Disease vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot1")),
+          box(width = 12, title = "Treatment vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot2")),
+          box(width = 12, title = " Worsening Heart Failure vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
               plotOutput("plot3"))
+        )
+      ),
+        tabPanel("Death", 
+        fluidRow(
+          box(width = 12, title = "Cardiovascular Disease vs Death", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot4")),
+          box(width = 12, title = "Treatment vs Death", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot5")),
+          box(width = 12, title = "Worsening Heart Failure vs Death", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot6"))
         )
       )
     )
   )
 )
-
 server <- function(input, output) {
   
-  DIG_sub <- reactive({
-    DIG %>%
+   DIG_sub <- reactive({
+    DIG_sub <- DIG %>%
       filter(TRTMT == input$Treatment) %>%
       filter(SEX == input$Sex) %>%
       filter(CVD == input$CVD) %>%
-      filter(AGE == input$Age) %>%
-      filter(BMI >= input$BMI[1] & BMI <= input$BMI[2])
+      filter(AGE >= input$Age[1] & AGE <= input$Age[2]) %>%
+      filter(BMI >= input$BMI) %>%
+      filter(WHF == input$WHF) %>%
+      filter(HOSPDAYS == input$HOSPDAYS) %>%
+      filter(!is.na(CVD) & !is.na(TRTMT) & !is.na(DEATH) & !is.na(AGE) & !is.na(BMI))
   })
   
   output$plot1 <- renderPlot({
-    filtered_data <- DIG_sub()
-    ggplot(filtered_data, aes(x = AGE, y = SYSBP)) +
-      geom_point() +
-      labs(title = "Hospitalisation: Age vs. Systolic Blood Pressure",
-           x = "Age", y = "Systolic BP") +
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = CVD, y = HOSPDAYS)) +
+      geom_violin() +
+      labs(title = "Hospitalisation; Cardiovascular Disease",
+           x = "Cardiovascular disease", y = "Hospital days") +
       theme_minimal()
   })
   
 
   output$plot2 <- renderPlot({
-    filtered_data <- DIG_sub()
-    ggplot(filtered_data, aes(x = AGE, y = BMI)) +
-      geom_point() +
-      labs(title = "Death: Age vs. BMI", x = "Age", y = "BMI") +
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = TRTMT, y = HOSPDAYS)) +
+      geom_violin() +
+      labs(title = "Hospitalisations by Group", x = "Treatment Group", y = "Days in hospital") +
       theme_minimal()
   })
   
 
   output$plot3 <- renderPlot({
-    filtered_data <- DIG_sub()
-    ggplot(filtered_data, aes(x = AGE, y = SYSBP, color = CVD)) +
-      geom_point() +
-      labs(title = "CVD: Age vs. Systolic Blood Pressure", 
-           x = "Age", y = "Systolic BP") +
-      scale_color_manual(values = c("red", "blue")) +
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = WHF, y = HOSPDAYS)) +
+      geom_violin() +
+      labs(title = "Worsening Heart Failure", 
+           x = "Worsening Heart Failure (0=no, 1=yes)", y = "Days in hospital") +
       theme_minimal()
   })
   
-  output$table1 <- renderDataTable({
-    DIG_sub()
+ 
+  output$plot4 <- renderPlot({
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = as.factor(CVD), fill = DEATH)) +
+      geom_bar(position = "dodge") +
+      labs(title = "Death by Cardiovascular Disease",
+           x = "Cardiovascular Disease", y = "Count", fill = "Death") +
+      scale_fill_manual(values = c("red", "blue")) +
+      theme_minimal()
   })
-}
+  
+ 
+  output$plot5 <- renderPlot({
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = as.factor(TRTMT), fill = DEATH)) +
+      geom_bar(position = "dodge") +
+      labs(title = "Death by Treatment Group",
+           x = "Treatment Group", y = "Count", fill = "Death") +
+      scale_fill_manual(values = c("deeppink", "blue")) +
+      theme_minimal()
+  })
+  
 
+  output$plot6 <- renderPlot({
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = as.factor(WHF), fill = DEATH)) +
+      geom_bar(position = "dodge") +
+      labs(title = "Death by Worsening Heart Failure",
+           x = "Worsening Heart Failure", y = "Count", fill = "Death") +
+      scale_fill_manual(values = c("yellow", "blue")) +
+      theme_minimal()
+  })
+
+  output$table1 <- renderDataTable({
+  DIG_sub()
+}, options = list(pageLength = 10))
+  }
+
+
+
+shinyApp(ui, server)
+```
 
 shinyApp(ui, server)
 ```
