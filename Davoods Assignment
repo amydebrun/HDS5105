@@ -1,15 +1,24 @@
+```{r}
+library(DT)
 library(tidyverse)
 library(shiny)
+library(shinydashboard)
 
 DIG<- read.csv("DIG.csv")
-DIG<-subset(DIG,select=c('ID', 'TRTMT', 'AGE', 'SEX', 'BMI', 'KLEVEL', 'CREAT', 'DIABP', 'SYSBP', 'HYPERTEN', 'CVD', 'WHF', 'DIG', 'HOSP', 'HOSPDAYS', 'DEATH', 'DEATHDAY'),col_types="ccnfnnnnnnnnnnnnn")
+DIG<-subset(DIG,select=c('ID', 'TRTMT', 'AGE', 'SEX', 'BMI', 'DIABP', 'SYSBP', 'CVD', 'WHF', 'HOSP', 'HOSPDAYS', 'DEATH'))
+
+DIG$TRTMT <- as.factor(DIG$TRTMT)
+DIG$SEX <- as.factor(DIG$SEX)
+DIG$CVD <- as.factor(DIG$CVD)
+DIG$WHF <- as.factor(DIG$WHF)
+DIG$HOSP <- as.factor(DIG$HOSP)
+DIG$DEATH <- as.factor(DIG$DEATH)
+DIG$AGE <- as.numeric(DIG$AGE)
 
 DIG$TRTMT <- factor(DIG$TRTMT, levels = c(0, 1), labels = c("Placebo", "Treatment"))
 DIG$SEX <- factor(DIG$SEX, levels = c(1, 2), labels = c("Male", "Female"))
-DIG$HYPERTEN <- factor(DIG$HYPERTEN, levels = c(0, 1), labels = c("No", "Yes"))
 DIG$CVD <- factor(DIG$CVD, levels = c(0, 1), labels = c("No", "Yes"))
 DIG$WHF <- factor(DIG$WHF, levels = c(0, 1), labels = c("No", "Yes"))
-DIG$DIG <- factor(DIG$DIG, levels = c(0, 1), labels = c("No", "Yes"))
 DIG$HOSP <- factor(DIG$HOSP, levels = c(0, 1), labels = c("No", "Yes"))
 DIG$DEATH <- factor(DIG$DEATH, levels = c(0, 1), labels = c("Alive", "Death"))
 
@@ -21,12 +30,12 @@ ui <- dashboardPage(
                           class = "dropdown")),
   
   dashboardSidebar(
-    selectInput(inputId = "Treatment", label = "Select Treatment:", choices = c("Placebo", "Treatment"), multiple = FALSE),
+    selectInput(inputId = "TRTMT", label = "Select Treatment:", choices = c("Placebo", "Treatment"), multiple = FALSE),
     sliderInput(inputId = "BMI", label = "Choose BMI:", min = 14.4, max = 62.7, value=14.4, step = 1, animate = TRUE),
-    radioButtons(inputId = "Sex", label = "Select Sex:", choices = c("Female", "Male")),
+    radioButtons(inputId = "SEX", label = "Select Sex:", choices = c("Female", "Male")),
     radioButtons(inputId = "CVD", label = "Cardiovascular disease?:", choices = c("Yes", "No")),
     radioButtons(inputId = "WHF", label = "Worsening Heart Failure?:", choices = c("Yes", "No")),
-    sliderInput("Age", label= "Select Age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE),
+    sliderInput("AGE", label= "Select Age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE),
     sliderInput("HOSPDAYS", label="Number of Days in Hospital", min=1, max=1770, value=1, step=1, animate=TRUE)
   ),
   
@@ -35,7 +44,7 @@ ui <- dashboardPage(
       tabPanel("Clinical Data", 
         fluidRow(
           box(width = 12, title = "Clinical Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              dataTableOutput("table1")) 
+         DTOutput("table1")) 
         )
       ),
       tabPanel("Hospitalisations", 
@@ -45,7 +54,9 @@ ui <- dashboardPage(
           box(width = 12, title = "Treatment vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
               plotOutput("plot2")),
           box(width = 12, title = " Worsening Heart Failure vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot3"))
+              plotOutput("plot3")),
+          box(width = 12, title = "Age vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot10"))
         )
       ),
         tabPanel("Death", 
@@ -73,50 +84,48 @@ ui <- dashboardPage(
 )
 server <- function(input, output) {
   
-   DIG_sub <- reactive({
-     DIG %>%
-      filter(TRTMT == input$Treatment) %>%
-      filter(SEX == input$Sex) %>%
-      filter(CVD == input$CVD) %>%
-      filter(AGE >= input$Age[1] & AGE <= input$Age[2]) %>%
-      filter(BMI >= input$BMI) %>%
-      filter(WHF == input$WHF) %>%
-      filter(HOSPDAYS == input$HOSPDAYS) %>%
-      filter(!is.na(CVD) & !is.na(TRTMT) & !is.na(DEATH) & !is.na(AGE) & !is.na(BMI))
+  DIG_sub <- reactive({
+  DIG %>%
+    filter(
+      TRTMT == input$TRTMT,
+      SEX == input$SEX,
+      CVD == input$CVD,
+      AGE == input$AGE,  
+      WHF == input$WHF,
+      HOSPDAYS == input$HOSPDAYS,
+      !is.na(CVD), !is.na(TRTMT), !is.na(DEATH), !is.na(AGE)
+    )
   })
   
   output$plot1 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = CVD, y = HOSPDAYS)) +
+    DIG_sub() %>%
+      ggplot(aes(x = CVD, y = HOSPDAYS)) +
       geom_violin() +
       labs(title = "Hospitalisation; Cardiovascular Disease",
            x = "Cardiovascular disease", y = "Hospital days") +
       theme_minimal()
   })
   
-
   output$plot2 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = TRTMT, y = HOSPDAYS)) +
+    DIG_sub() %>%
+      ggplot(aes(x = TRTMT, y = HOSPDAYS)) +
       geom_violin() +
       labs(title = "Hospitalisations by Group", x = "Treatment Group", y = "Days in hospital") +
-      theme_minimal()
+      theme_minimal()  
   })
   
-
   output$plot3 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = WHF, y = HOSPDAYS)) +
+    DIG_sub() %>%
+    ggplot(aes(x = WHF, y = HOSPDAYS)) +
       geom_violin() +
       labs(title = "Worsening Heart Failure", 
            x = "Worsening Heart Failure (0=no, 1=yes)", y = "Days in hospital") +
       theme_minimal()
   })
   
- 
   output$plot4 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = as.factor(CVD), fill = DEATH)) +
+    DIG_sub() %>%
+      ggplot(aes(x = as.factor(CVD), fill = DEATH)) +
       geom_bar(position = "dodge") +
       labs(title = "Death by Cardiovascular Disease",
            x = "Cardiovascular Disease", y = "Count", fill = "Death") +
@@ -124,10 +133,9 @@ server <- function(input, output) {
       theme_minimal()
   })
   
- 
   output$plot5 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = as.factor(TRTMT), fill = DEATH)) +
+    DIG_sub() %>%
+      ggplot(aes(x = as.factor(TRTMT), fill = DEATH)) +
       geom_bar(position = "dodge") +
       labs(title = "Death by Treatment Group",
            x = "Treatment Group", y = "Count", fill = "Death") +
@@ -135,101 +143,57 @@ server <- function(input, output) {
       theme_minimal()
   })
   
-
   output$plot6 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = as.factor(WHF), fill = DEATH)) +
+    DIG_sub() %>%
+      ggplot(aes(x = as.factor(WHF), fill = DEATH)) +
       geom_bar(position = "dodge") +
       labs(title = "Death by Worsening Heart Failure",
            x = "Worsening Heart Failure", y = "Count", fill = "Death") +
       scale_fill_manual(values = c("yellow", "blue")) +
       theme_minimal()
   })
-
   
   output$plot7 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(SYSBP, DIABP)) +
-  geom_jitter(width=0.05, height=0.05)+
-  scale_colour_manual(values = c("green")) + 
-  ggtitle("Scatterplot; Systolic and Diastol BP") + geom_smooth()
+    DIG_sub() %>%
+      ggplot(aes(SYSBP, DIABP)) +
+      geom_jitter(width=0.05, height=0.05) +
+      scale_colour_manual(values = c("green")) + 
+      ggtitle("Scatterplot; Systolic and Diastol BP") +
+      geom_smooth()
   })
   
   output$plot8 <- renderPlot({
-    dig <- DIG_sub()
-  ggplot(dig, aes(SYSBP, DIABP, col=TRTMT)) +
-  geom_jitter(width=0.05, height=0.05)+
-  scale_colour_manual(values = c("cyan", "pink")) + 
-  ggtitle("Scatterplot; Systolic and Diastol BP, factored by Treatment") + geom_smooth()
+    DIG_sub() %>%
+      ggplot(aes(SYSBP, DIABP, col=TRTMT)) +
+      geom_jitter(width=0.05, height=0.05) +
+      scale_colour_manual(values = c("cyan", "pink")) + 
+      ggtitle("Scatterplot; Systolic and Diastol BP, factored by Treatment") +
+      geom_smooth()
   })
   
-  
-    output$plot9 <- renderPlot({
-    dig <- DIG_sub()
-  ggplot(dig, aes(SYSBP, DIABP, col=CVD)) +
-  geom_jitter(width=0.05, height=0.05)+
-  scale_colour_manual(values = c("seagreen2", "coral")) + 
-  ggtitle("Scatterplot; Systolic and Diastol BP, factored by CVD") + geom_smooth()
+  output$plot9 <- renderPlot({
+    DIG_sub() %>%
+      ggplot(aes(SYSBP, DIABP, col=CVD)) +
+      geom_jitter(width=0.05, height=0.05) +
+      scale_colour_manual(values = c("seagreen2", "coral")) + 
+      ggtitle("Scatterplot; Systolic and Diastol BP, factored by CVD") +
+      geom_smooth()
   })
   
+  output$plot10 <- renderPlot({
+    ggplot(DIG_sub(), aes(x = AGE, y = HOSPDAYS)) +
+      geom_point() +
+      labs(title = "Age & Hospital days",
+           x = "Age", y = "Hospital days") +
+      theme_minimal()
+  })
   
- output$table1 <- renderDataTable({ 
+  output$table1 <- renderDataTable({ 
+    req(nrow(DIG_sub()) > 0)  
     DIG_sub()
-    })
-  }
-
-
+  })
+}
 
 shinyApp(ui, server)
-```
-      geom_violin() +
-      labs(title = "Worsening Heart Failure", 
-           x = "Worsening Heart Failure (0=no, 1=yes)", y = "Days in hospital") +
-      theme_minimal()
-  })
-  
- 
-  output$plot4 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = as.factor(CVD), fill = DEATH)) +
-      geom_bar(position = "dodge") +
-      labs(title = "Death by Cardiovascular Disease",
-           x = "Cardiovascular Disease", y = "Count", fill = "Death") +
-      scale_fill_manual(values = c("red", "blue")) +
-      theme_minimal()
-  })
-  
- 
-  output$plot5 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = as.factor(TRTMT), fill = DEATH)) +
-      geom_bar(position = "dodge") +
-      labs(title = "Death by Treatment Group",
-           x = "Treatment Group", y = "Count", fill = "Death") +
-      scale_fill_manual(values = c("deeppink", "blue")) +
-      theme_minimal()
-  })
-  
 
-  output$plot6 <- renderPlot({
-    dig <- DIG_sub()
-    ggplot(dig, aes(x = as.factor(WHF), fill = DEATH)) +
-      geom_bar(position = "dodge") +
-      labs(title = "Death by Worsening Heart Failure",
-           x = "Worsening Heart Failure", y = "Count", fill = "Death") +
-      scale_fill_manual(values = c("yellow", "blue")) +
-      theme_minimal()
-  })
-
-  output$table1 <- renderDataTable({
-  DIG_sub()
-}, options = list(pageLength = 10))
-  }
-
-
-
-shinyApp(ui, server)
-```
-
-shinyApp(ui, server)
 ```
