@@ -15,350 +15,96 @@ DIG<- read.csv("DIG.csv")
 ```
 
 ```{r}
-library(shiny)
-
-ui <- fluidPage(
-  
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-```
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group")
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-```
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group"),
-  sidebarLayout(
-    sidebarPanel(
-    # Controls and content for sidebar go here
-    ),
-    mainPanel(
-    # Controls and content for main panel go here
-    )
-  )
-  
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-```
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group"),
-  sidebarLayout(
-    sidebarPanel(
-        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        
-        selectInput(inputId = "sex", label = "Select Sex:", choices = c("m", "f"), multiple = FALSE)
-        
-    ),
-    mainPanel(
-    # Controls and content for main panel go here
-    )
-  )
-  
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-```
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group"),
-  sidebarLayout(
-    sidebarPanel(
-        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male"), inline = T)
-    ),
-    mainPanel(
-    # Controls and content for main panel go here
-    )
-  )
-  
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-```
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group"),
-  sidebarLayout(
-    sidebarPanel(
-        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 0, max = 200, value = c(4000, 5000))
-
-    ),
-    mainPanel(
-    # Controls and content for main panel go here
-    )
-  )
-  
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-
-```
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group"),
-  sidebarLayout(
-    sidebarPanel(
-       selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
-
-    ),
-    mainPanel(
-    # Controls and content for main panel go here
-    )
-  )
-  
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-
-```
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group"),
-  sidebarLayout(
-    sidebarPanel(
-       selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
-
-    ),
-    mainPanel(
-    plotOutput("plot1")
-    )
-  )
-  
-)
-
-server <- function(input, output) {
-  
-}
-
-shinyApp(ui, server)
-
-```
-
-```{r}
-library(shiny)
-library(tidyverse)
-library(palmerpenguins)
-
-
-ui <- fluidPage(
-  titlePanel("Digitalis Investigation Group"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
-
-    ),
-    mainPanel(
-    plotOutput("plot1")
-    )
-  )
-  
-)
-
-server <- function(input, output) {
-  output$plot1 <- renderPlot({ 
-      ggplot(DIG, aes(x = diabp, y = sysbp +
-      geom_point()
-    })
-}
-
-shinyApp(ui, server)
-
-```
-
-```{r}
-library(shinydashboard)
 ui <- dashboardPage(
-    dashboardHeader(title = "Digitalis Investigation Group",titleWidth = 450,
+  dashboardHeader(title = "Digitalis Investigation Group Trial", titleWidth = 450,
                   tags$li(a(href = 'https://biolincc.nhlbi.nih.gov/studies/dig/',
-                            img(src = 'penguins.png',
-                                title = "DIG Homepage", height = "30px", width = "50px"),
+                            img(src = 'Digoxin_structure.png', title = "DIGS Homepage", height = "30px", width = "50px"),
                             style = "padding-top:10px; padding-bottom:10px;"),
                           class = "dropdown")),
-    
-    dashboardSidebar(
-        selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
-    ),
-    dashboardBody(
-      fluidRow(
-        box(width=4, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-            plotOutput("plot1")),
-        box(width=8, title = "Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-            dataTableOutput("table1"))
-      )
-    )
-)
-
-server <- function(input, output) {
- DIG_sub <- reactive({
-    DIG %>%
-      filter(treatment == input$species) %>%
-      filter(sex == input$sex) %>%
-      filter(hyperten == input$hyperten) %>%
-      filter(cvd == input$cvd)%>%
-      filter(whf == input$whf) %>%
-      filter(dig == input$dig) %>%
-      filter(hosp == input$hosp) %>%
-      filter(death == input$death)
-  })
   
-  output$plot1 <- renderPlot({ 
-      ggplot(data = DIG_sub(), aes(x = trtmt, y = dig) +
-      geom_boxplot()
-    })
+  dashboardSidebar(
+    selectInput(inputId = "Treatment", label = "Select Treatment:", choices = c("Placebo", "Treatment"), multiple = FALSE),
+    sliderInput(inputId = "BMI", label = "Choose BMI Range:", min = 14.4, max = 62.7, value=14.4, step = 1, animate = TRUE),
+    radioButtons(inputId = "Sex", label = "Select Sex:", choices = c("Female", "Male")),
+    radioButtons(inputId = "CVD", label = "Cardiovascular disease?:", choices = c("Yes", "No")),
+    sliderInput("Age", "Select Age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
+  ),
   
-  output$table1 <- renderDataTable({ 
-    DIG_sub()
-    })
-  
-}
-
-shinyApp(ui = ui, server = server)
-```
-```{r}
-library(shinydashboard)
-ui <- dashboardPage(
-    dashboardHeader(title = "Digitalis Investigation Group Trial",titleWidth = 450,
-                  tags$li(a(href = 'https://biolincc.nhlbi.nih.gov/studies/dig/',
-                            img(src = 'penguins.png',
-                                title = "DIGS Homepage", height = "30px", width = "50px"),
-                            style = "padding-top:10px; padding-bottom:10px;"),
-                          class = "dropdown")),
-    
-    dashboardSidebar(
-       selectInput(inputId = "treatment", label = "Select Treatment:", choices = c("Placebo","Treatment"), multiple = FALSE),
-        radioButtons(inputId = "sex", label = "Select Sex:", choices = c("female", "male")),
-        sliderInput("diabp", "Select Dystolic BP range:", min = 25, max = 184, value = c(25, 26)),
-        sliderInput("age", "Select age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE)
-    ),
-    dashboardBody(
+  dashboardBody(
     tabBox(width = 12, id = "tabs",
-      tabPanel("Scatter Plot", 
-               fluidRow(box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-            plotOutput("plot1")))
+      tabPanel("Clinical Data", 
+        fluidRow(
+          box(width=12, title = "Clinical Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              dataTableOutput("table1")) 
+        )
       ),
-      tabPanel("Data", 
-               fluidRow(
-                box(width=12, title = "Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-            dataTableOutput("table1")) 
-               )
-               
+      tabPanel("Hospitalisations", 
+        fluidRow(
+          box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot1"))
+        )
+      ),
+      tabPanel("Death", 
+        fluidRow(
+          box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot2"))
+        )
+      ),
+      tabPanel("Cardiovascular Disease", 
+        fluidRow(
+          box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot3"))
+        )
       )
     )
   )
 )
 
 server <- function(input, output) {
-  penguins_sub <- reactive({
+  
+  DIG_sub <- reactive({
     DIG %>%
-      filter(treatment == input$species) %>%
-      filter(sex == input$sex) %>%
-      filter(hyperten == input$hyperten) %>%
-      filter(cvd == input$cvd)%>%
-      filter(whf == input$whf) %>%
-      filter(dig == input$dig) %>%
-      filter(hosp == input$hosp) %>%
-      filter(death == input$death)
+      filter(TRTMT == input$Treatment) %>%
+      filter(SEX == input$Sex) %>%
+      filter(CVD == input$CVD) %>%
+      filter(AGE == input$Age) %>%
+      filter(BMI >= input$BMI[1] & BMI <= input$BMI[2])
   })
   
-  output$plot1 <- renderPlot({ 
-      ggplot(data = DIG_sub(), aes(x = diabp, y = sysbp)) +
-      geom_point()
-    })
+  output$plot1 <- renderPlot({
+    filtered_data <- DIG_sub()
+    ggplot(filtered_data, aes(x = AGE, y = SYSBP)) +
+      geom_point() +
+      labs(title = "Hospitalisation: Age vs. Systolic Blood Pressure",
+           x = "Age", y = "Systolic BP") +
+      theme_minimal()
+  })
   
-  output$table1 <- renderDataTable({ 
+
+  output$plot2 <- renderPlot({
+    filtered_data <- DIG_sub()
+    ggplot(filtered_data, aes(x = AGE, y = BMI)) +
+      geom_point() +
+      labs(title = "Death: Age vs. BMI", x = "Age", y = "BMI") +
+      theme_minimal()
+  })
+  
+
+  output$plot3 <- renderPlot({
+    filtered_data <- DIG_sub()
+    ggplot(filtered_data, aes(x = AGE, y = SYSBP, color = CVD)) +
+      geom_point() +
+      labs(title = "CVD: Age vs. Systolic Blood Pressure", 
+           x = "Age", y = "Systolic BP") +
+      scale_color_manual(values = c("red", "blue")) +
+      theme_minimal()
+  })
+  
+  output$table1 <- renderDataTable({
     DIG_sub()
-    })
-  
+  })
 }
 
-shinyApp(ui = ui, server = server)
-```
 
-
-```{r, eval=FALSE}
-dashboardBody(
-    tabBox(width = 12, id = "tabs",
-      tabPanel("Scatter Plot", 
-               fluidRow(box(width=12, title = "Scatter Plot", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-            plotOutput("plot1")))
-      ),
-      tabPanel("Data", 
-               fluidRow(
-                box(width=12, title = "Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-            dataTableOutput("table1")) 
-               )
-               
-      )
-    )
-  )
+shinyApp(ui, server)
 ```
