@@ -1,196 +1,254 @@
-```{r}
-library(DT) 
+
+```{r, echo=FALSE}
+library(DT)
 library(tidyverse)
 library(shiny)
 library(shinydashboard)
+library(RColorBrewer)
+suppressPackageStartupMessages(library(DT))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(shiny))
+suppressPackageStartupMessages(library(shinydashboard))
+suppressPackageStartupMessages(library(RColorBrewer))
 
-DIG<- read.csv("DIG.csv")
-DIG<-subset(DIG,select=c('ID', 'TRTMT', 'AGE', 'SEX', 'BMI', 'DIABP', 'SYSBP', 'CVD', 'WHF', 'HOSP', 'HOSPDAYS', 'DEATH'))
+DIG <- read.csv("C:/Users/Tek shop/Downloads/DIG.csv")
+DIG <- subset(DIG, select = c('ID', 'TRTMT', 'AGE', 'SEX', 'BMI', 'DIABP', 'SYSBP', 'CVD', 'WHF', 'HOSP', 'HOSPDAYS', 'DEATH'))
 
-DIG$TRTMT <- as.factor(DIG$TRTMT)
-DIG$SEX <- as.factor(DIG$SEX)
-DIG$CVD <- as.factor(DIG$CVD)
-DIG$WHF <- as.factor(DIG$WHF)
-DIG$HOSP <- as.factor(DIG$HOSP)
-DIG$DEATH <- as.factor(DIG$DEATH)
-DIG$AGE <- as.numeric(DIG$AGE)
+DIG <- DIG %>%
+  mutate(
+    TRTMT = factor(TRTMT, levels = c(0, 1), labels = c("Placebo", "Treatment")),
+    SEX = factor(SEX, levels = c(1, 2), labels = c("Male", "Female")),
+    CVD = factor(CVD, levels = c(0, 1), labels = c("No", "Yes")),
+    WHF = factor(WHF, levels = c(0, 1), labels = c("No", "Yes")),
+    HOSP = factor(HOSP, levels = c(0, 1), labels = c("No", "Yes")),
+    DEATH = factor(DEATH, levels = c(0, 1), labels = c("Alive", "Death")),
+    AGE = as.numeric(AGE)
+  )
+median_klevel <- median(DIG$KLEVEL, na.rm = TRUE)
+DIG$KLEVEL[is.na(DIG$KLEVEL)] <- median_klevel
 
-DIG$TRTMT <- factor(DIG$TRTMT, levels = c(0, 1), labels = c("Placebo", "Treatment"))
-DIG$SEX <- factor(DIG$SEX, levels = c(1, 2), labels = c("Male", "Female"))
-DIG$CVD <- factor(DIG$CVD, levels = c(0, 1), labels = c("No", "Yes"))
-DIG$WHF <- factor(DIG$WHF, levels = c(0, 1), labels = c("No", "Yes"))
-DIG$HOSP <- factor(DIG$HOSP, levels = c(0, 1), labels = c("No", "Yes"))
-DIG$DEATH <- factor(DIG$DEATH, levels = c(0, 1), labels = c("Alive", "Death"))
+median_bmi <- median(DIG$BMI, na.rm = TRUE)
+DIG$BMI[is.na(DIG$BMI)] <- median_bmi
+
+median_diabp <- median(DIG$DIABP, na.rm = TRUE)
+DIG$DIABP[is.na(DIG$DIABP)] <- median_diabp
+
+median_sysbp <- median(DIG$SYSBP, na.rm = TRUE)
+DIG$SYSBP[is.na(DIG$SYSBP)] <- median_sysbp
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Digitalis Investigation Group Trial", titleWidth = 450,
+  dashboardHeader(title = "Digitalis Investigation Group Trial", titleWidth = 500,
                   tags$li(a(href = 'https://biolincc.nhlbi.nih.gov/studies/dig/',
                             img(src = 'Digoxin_structure.png', title = "DIGS Homepage", height = "30px", width = "50px"),
                             style = "padding-top:10px; padding-bottom:10px;"),
                           class = "dropdown")),
   
   dashboardSidebar(
-    selectInput(inputId = "TRTMT", label = "Select Treatment:", choices = c("Placebo", "Treatment"), multiple = FALSE),
-    sliderInput(inputId = "BMI", label = "Choose BMI:", min = 14.4, max = 62.7, value=14.4, step = 1, animate = TRUE),
-    radioButtons(inputId = "SEX", label = "Select Sex:", choices = c("Female", "Male")),
-    radioButtons(inputId = "CVD", label = "Cardiovascular disease?:", choices = c("Yes", "No")),
-    radioButtons(inputId = "WHF", label = "Worsening Heart Failure?:", choices = c("Yes", "No")),
-    sliderInput("AGE", label= "Select Age:", min = 21, max = 90, value = 21, step = 1, animate = TRUE),
-    sliderInput("HOSPDAYS", label="Number of Days in Hospital", min=1, max=1770, value=1, step=1, animate=TRUE)
+    sidebarMenu(
+      menuItem("Filters", tabName = "filters", icon = icon("filter")),
+      selectInput(inputId = "TRTMT", label = "Select Treatment:", choices = c("Placebo", "Treatment"),selected = c("Placebo") ,multiple = TRUE),
+      sliderInput(inputId = "BMI", label = "Choose BMI:", min = min(DIG$BMI, na.rm = TRUE), max = max(DIG$BMI, na.rm = TRUE), value = c(min(DIG$BMI, na.rm = TRUE), max(DIG$BMI, na.rm = TRUE)), step = 7),
+      radioButtons(inputId = "SEX", label = "Select Sex:", choices = c("Female", "Male")),
+      radioButtons(inputId = "CVD", label = "Cardiovascular Disease?", choices = c("Yes", "No")),
+      radioButtons(inputId = "WHF", label = "Worsening Heart Failure?", choices = c("Yes", "No")),
+      sliderInput(inputId = "AGE", label = "Select Age:", min = min(DIG$AGE, na.rm = TRUE), max = max(DIG$AGE, na.rm = TRUE), value = c(min(DIG$AGE, na.rm = TRUE), max(DIG$AGE, na.rm = TRUE)), step = 1),
+      sliderInput(inputId = "HOSPDAYS", label = "Number of Days in Hospital:", min = min(DIG$HOSPDAYS, na.rm = TRUE), max = max(DIG$HOSPDAYS, na.rm = TRUE), value = c(1, 1770), step = 1)
+    )
   ),
   
   dashboardBody(
-    tabBox(width = 12, id = "tabs",
-      tabPanel("Clinical Data", 
-        fluidRow(
-          box(width = 12, title = "Clinical Data", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-         DTOutput("table1")) 
-        )
+    tabBox(
+      width = 12, id = "tabs",
+      tabPanel("Clinical Data",
+               DTOutput("table1")
       ),
-      tabPanel("Hospitalisations", 
-        fluidRow(
-          box(width = 12, title = "Cardiovascular Disease vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot1")),
-          box(width = 12, title = "Treatment vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot2")),
-          box(width = 12, title = " Worsening Heart Failure vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot3")),
-          box(width = 12, title = "Age vs Hospital Days", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot10"))
-        )
+      tabPanel("Hospitalisations",
+               fluidRow(
+                 box(title = "Average Days in Hospital by Cardiovascular Disease", status = "primary", solidHeader = TRUE, plotOutput("plot1")),
+                 box(title = "Average Days in Hospital by Treatment", status = "primary", solidHeader = TRUE, plotOutput("plot2")),
+                 box(title = "Average Days in Hospital by Heart Failure", status = "primary", solidHeader = TRUE, plotOutput("plot3")),
+                 box(title = "Hospital Days by Age", status = "primary", solidHeader = TRUE, plotOutput("plot7"))
+               )
       ),
-        tabPanel("Death", 
-        fluidRow(
-          box(width = 12, title = "Cardiovascular Disease vs Death", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot4")),
-          box(width = 12, title = "Treatment vs Death", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot5")),
-          box(width = 12, title = "Worsening Heart Failure vs Death", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot6"))
-        )
+      tabPanel("Death",
+               fluidRow(
+                 box(title = "Deaths by Cardiovascular Disease", status = "danger", solidHeader = TRUE, plotOutput("plot4")),
+                 box(title = "Deaths by Treatment", status = "danger", solidHeader = TRUE, plotOutput("plot5")),
+                 box(title = "Deaths by Heart Failure", status = "danger", solidHeader = TRUE, plotOutput("plot6")),
+                 box(title = "Death Proportion by Age Group", status = "danger", solidHeader = TRUE, plotOutput("plot8"))
+               )
       ),
-        tabPanel("Blood Pressure", 
-        fluidRow(
-          box(width = 12, title = "Systolic vs Diastolic BP", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot7")),
-          box(width = 12, title = "Blood Pressure factored by Treatment", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot8")),
-          box(width = 12, title = "Blood Pressure factored by Cardiovascular disease", collapsible = TRUE, status = "warning", solidHeader = TRUE,
-              plotOutput("plot9"))
-        )
+      tabPanel("Blood Pressure",
+               fluidRow(
+                 box(title = "Distribution of Diastolic BP by Treatment", status = "info", solidHeader = TRUE, plotOutput("plot9")),
+                 box(title = "Distribution of Systolic BP by Treatment", status = "info", solidHeader = TRUE, plotOutput("plot10")),
+                 box(title = "Scatter Plot of SYSBP vs DIABP", status = "info", solidHeader = TRUE, plotOutput("plot11"))
+               )
       )
     )
   )
 )
+
+# Define the server logic
 server <- function(input, output) {
   
   DIG_sub <- reactive({
-  DIG %>%
-    filter(
-      TRTMT == input$TRTMT,
-      SEX == input$SEX,
-      CVD == input$CVD,
-      AGE == input$AGE,  
-      WHF == input$WHF,
-      HOSPDAYS == input$HOSPDAYS,
-      !is.na(CVD), !is.na(TRTMT), !is.na(DEATH), !is.na(AGE)
-    )
+    filtered_data <- DIG %>%
+      filter(
+        TRTMT %in% input$TRTMT,
+        SEX == input$SEX,
+        CVD == input$CVD,
+        WHF == input$WHF,
+        AGE >= input$AGE[1], AGE <= input$AGE[2],
+        BMI >= input$BMI[1], BMI <= input$BMI[2],
+        HOSPDAYS >= input$HOSPDAYS[1], HOSPDAYS <= input$HOSPDAYS[2]
+      )
+    return(filtered_data)
+  })
+  
+  output$table1 <- renderDT({
+    req(nrow(DIG_sub()) > 0)
+    DIG_sub()
   })
   
   output$plot1 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(x = CVD, y = HOSPDAYS)) +
-      geom_violin() +
-      labs(title = "Hospitalisation; Cardiovascular Disease",
-           x = "Cardiovascular disease", y = "Hospital days") +
-      theme_minimal()
+    ggplot(DIG_sub(), aes(x = CVD, y = HOSPDAYS, fill = CVD)) +
+      stat_summary(fun = "mean", geom = "bar", width = 0.7) +
+      scale_fill_brewer(palette = "Set2") +
+      labs( x = "Cardiovascular Disease", y = "Average Days in Hospital") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1),
+        legend.position = "none"
+      )
   })
   
   output$plot2 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(x = TRTMT, y = HOSPDAYS)) +
-      geom_violin() +
-      labs(title = "Hospitalisations by Group", x = "Treatment Group", y = "Days in hospital") +
-      theme_minimal()  
+    ggplot(DIG_sub(), aes(x = TRTMT, y = HOSPDAYS, fill = TRTMT)) +
+      stat_summary(fun = "mean", geom = "bar", width = 0.7) +
+      scale_fill_brewer(palette = "Set3") +
+      labs(x = "Treatment", y = "Average Days in Hospital") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1),
+        legend.position = "none"
+      )
   })
   
   output$plot3 <- renderPlot({
-    DIG_sub() %>%
-    ggplot(aes(x = WHF, y = HOSPDAYS)) +
-      geom_violin() +
-      labs(title = "Worsening Heart Failure", 
-           x = "Worsening Heart Failure (0=no, 1=yes)", y = "Days in hospital") +
-      theme_minimal()
+    ggplot(DIG_sub(), aes(x = WHF, y = HOSPDAYS, fill = WHF)) +
+      stat_summary(fun = "mean", geom = "bar", width = 0.7) +
+      scale_fill_brewer(palette = "Paired") +
+      labs(x = "Heart Failure", y = "Average Days in Hospital") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1),
+        legend.position = "none"
+      )
   })
   
   output$plot4 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(x = as.factor(CVD), fill = DEATH)) +
-      geom_bar(position = "dodge") +
-      labs(title = "Death by Cardiovascular Disease",
-           x = "Cardiovascular Disease", y = "Count", fill = "Death") +
-      scale_fill_manual(values = c("red", "blue")) +
-      theme_minimal()
+    ggplot(DIG_sub(), aes(x = CVD, fill = DEATH)) +
+      geom_bar(position = "fill") +
+      scale_fill_brewer(palette = "RdYlBu") +
+      labs(x = "Cardiovascular Disease", y = "Proportion") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1),
+        legend.position = "none"
+      )
   })
   
   output$plot5 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(x = as.factor(TRTMT), fill = DEATH)) +
-      geom_bar(position = "dodge") +
-      labs(title = "Death by Treatment Group",
-           x = "Treatment Group", y = "Count", fill = "Death") +
-      scale_fill_manual(values = c("deeppink", "blue")) +
-      theme_minimal()
+    ggplot(DIG_sub(), aes(x = TRTMT, fill = DEATH)) +
+      geom_bar(position = "fill") +
+      scale_fill_brewer(palette = "YlOrRd") +
+      labs(x = "Treatment", y = "Proportion") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1),
+        legend.position = "none"
+      )
   })
   
   output$plot6 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(x = as.factor(WHF), fill = DEATH)) +
-      geom_bar(position = "dodge") +
-      labs(title = "Death by Worsening Heart Failure",
-           x = "Worsening Heart Failure", y = "Count", fill = "Death") +
-      scale_fill_manual(values = c("yellow", "blue")) +
-      theme_minimal()
+    ggplot(DIG_sub(), aes(x = WHF, fill = DEATH)) +
+      geom_bar(position = "fill") +
+      scale_fill_brewer(palette = "Oranges") +
+      labs(x = "Heart Failure", y = "Proportion") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1),
+        legend.position = "none"
+      )
   })
   
   output$plot7 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(SYSBP, DIABP)) +
-      geom_jitter(width=0.05, height=0.05) +
-      scale_colour_manual(values = c("green")) + 
-      ggtitle("Scatterplot; Systolic and Diastol BP") +
-      geom_smooth()
+    ggplot(DIG_sub(), aes(x = AGE, y = HOSPDAYS)) +
+      geom_point(aes(color = HOSPDAYS), size = 2) +
+      geom_smooth(method = "lm", color = "black", se = FALSE) +
+      labs(x = "Age", y = "Days in Hospital") +
+      scale_color_gradientn(colors = brewer.pal(9, "YlOrRd")) +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1)
+      )
   })
   
   output$plot8 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(SYSBP, DIABP, col=TRTMT)) +
-      geom_jitter(width=0.05, height=0.05) +
-      scale_colour_manual(values = c("cyan", "pink")) + 
-      ggtitle("Scatterplot; Systolic and Diastol BP, factored by Treatment") +
-      geom_smooth()
+    ggplot(DIG_sub(), aes(x = AGE, fill = DEATH)) +
+      geom_bar(position = "fill") +
+      scale_fill_brewer(palette = "YlGnBu") +
+      labs(x = "Age Group", y = "Proportion") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1),
+        legend.position = "none"
+      )
   })
-  
+
   output$plot9 <- renderPlot({
-    DIG_sub() %>%
-      ggplot(aes(SYSBP, DIABP, col=CVD)) +
-      geom_jitter(width=0.05, height=0.05) +
-      scale_colour_manual(values = c("seagreen2", "coral")) + 
-      ggtitle("Scatterplot; Systolic and Diastol BP, factored by CVD") +
-      geom_smooth()
+    ggplot(DIG_sub(), aes(x = DIABP, fill = TRTMT)) +
+      geom_histogram(binwidth = 5, alpha = 0.5, position = "identity") +
+      scale_fill_brewer(palette = "Set1") +
+      labs(x = "Diastolic Blood Pressure", y = "Frequency") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1)
+      )
   })
-  
+
   output$plot10 <- renderPlot({
-    ggplot(DIG_sub(), aes(x = AGE, y = HOSPDAYS)) +
-      geom_point() +
-      labs(title = "Age & Hospital days",
-           x = "Age", y = "Hospital days") +
-      theme_minimal()
+    ggplot(DIG_sub(), aes(x = SYSBP, fill = TRTMT)) +
+      geom_histogram(binwidth = 5, alpha = 0.5, position = "identity") +
+      scale_fill_brewer(palette = "Set1") +
+      labs(x = "Systolic Blood Pressure", y = "Frequency") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1)
+      )
   })
-  
-  output$table1 <- renderDataTable({ 
-    req(nrow(DIG_sub()) > 0)  
-    DIG_sub()
+
+  output$plot11 <- renderPlot({
+    ggplot(DIG_sub(), aes(x = SYSBP, y = DIABP, color = TRTMT)) +
+      geom_point(alpha = 0.5) +
+      scale_color_brewer(palette = "Set1") +
+      labs(x = "Systolic BP", y = "Diastolic BP") +
+      theme_minimal() +
+      theme(
+        axis.line = element_line(color = "black", size = 1),  
+        axis.ticks = element_line(color = "black", size = 1)
+      )
   })
 }
 
