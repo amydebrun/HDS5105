@@ -1,10 +1,3 @@
-```{r}
-if (!require("shiny")) install.packages("shiny")
-if (!require("tidyverse")) install.packages("tidyverse")
-if (!require("DynNom")) install.packages("DynNom")
-if (!require("shinydashboard")) install.packages("shinydashboard")
-
-
 library(tidyverse)
 library(shiny)
 
@@ -64,6 +57,16 @@ ui <- dashboardPage(
           box(width = 12, title = "Worsening Heart Failure vs Death", collapsible = TRUE, status = "warning", solidHeader = TRUE,
               plotOutput("plot6"))
         )
+      ),
+        tabPanel("Blood Pressure", 
+        fluidRow(
+          box(width = 12, title = "Systolic vs Diastolic BP", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot7")),
+          box(width = 12, title = "Blood Pressure factored by Treatment", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot8")),
+          box(width = 12, title = "Blood Pressure factored by Cardiovascular disease", collapsible = TRUE, status = "warning", solidHeader = TRUE,
+              plotOutput("plot9"))
+        )
       )
     )
   )
@@ -71,7 +74,7 @@ ui <- dashboardPage(
 server <- function(input, output) {
   
    DIG_sub <- reactive({
-    DIG_sub <- DIG %>%
+     DIG %>%
       filter(TRTMT == input$Treatment) %>%
       filter(SEX == input$Sex) %>%
       filter(CVD == input$CVD) %>%
@@ -104,6 +107,81 @@ server <- function(input, output) {
   output$plot3 <- renderPlot({
     dig <- DIG_sub()
     ggplot(dig, aes(x = WHF, y = HOSPDAYS)) +
+      geom_violin() +
+      labs(title = "Worsening Heart Failure", 
+           x = "Worsening Heart Failure (0=no, 1=yes)", y = "Days in hospital") +
+      theme_minimal()
+  })
+  
+ 
+  output$plot4 <- renderPlot({
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = as.factor(CVD), fill = DEATH)) +
+      geom_bar(position = "dodge") +
+      labs(title = "Death by Cardiovascular Disease",
+           x = "Cardiovascular Disease", y = "Count", fill = "Death") +
+      scale_fill_manual(values = c("red", "blue")) +
+      theme_minimal()
+  })
+  
+ 
+  output$plot5 <- renderPlot({
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = as.factor(TRTMT), fill = DEATH)) +
+      geom_bar(position = "dodge") +
+      labs(title = "Death by Treatment Group",
+           x = "Treatment Group", y = "Count", fill = "Death") +
+      scale_fill_manual(values = c("deeppink", "blue")) +
+      theme_minimal()
+  })
+  
+
+  output$plot6 <- renderPlot({
+    dig <- DIG_sub()
+    ggplot(dig, aes(x = as.factor(WHF), fill = DEATH)) +
+      geom_bar(position = "dodge") +
+      labs(title = "Death by Worsening Heart Failure",
+           x = "Worsening Heart Failure", y = "Count", fill = "Death") +
+      scale_fill_manual(values = c("yellow", "blue")) +
+      theme_minimal()
+  })
+
+  
+  output$plot7 <- renderPlot({
+    dig <- DIG_sub()
+    ggplot(dig, aes(SYSBP, DIABP)) +
+  geom_jitter(width=0.05, height=0.05)+
+  scale_colour_manual(values = c("green")) + 
+  ggtitle("Scatterplot; Systolic and Diastol BP") + geom_smooth()
+  })
+  
+  output$plot8 <- renderPlot({
+    dig <- DIG_sub()
+  ggplot(dig, aes(SYSBP, DIABP, col=TRTMT)) +
+  geom_jitter(width=0.05, height=0.05)+
+  scale_colour_manual(values = c("cyan", "pink")) + 
+  ggtitle("Scatterplot; Systolic and Diastol BP, factored by Treatment") + geom_smooth()
+  })
+  
+  
+    output$plot9 <- renderPlot({
+    dig <- DIG_sub()
+  ggplot(dig, aes(SYSBP, DIABP, col=CVD)) +
+  geom_jitter(width=0.05, height=0.05)+
+  scale_colour_manual(values = c("seagreen2", "coral")) + 
+  ggtitle("Scatterplot; Systolic and Diastol BP, factored by CVD") + geom_smooth()
+  })
+  
+  
+ output$table1 <- renderDataTable({ 
+    DIG_sub()
+    })
+  }
+
+
+
+shinyApp(ui, server)
+```
       geom_violin() +
       labs(title = "Worsening Heart Failure", 
            x = "Worsening Heart Failure (0=no, 1=yes)", y = "Days in hospital") +
